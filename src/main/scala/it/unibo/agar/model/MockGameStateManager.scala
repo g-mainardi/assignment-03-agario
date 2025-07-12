@@ -32,12 +32,7 @@ class MockGameStateManager(
     player.copy(x = newX, y = newY)
 
   private def updateWorldAfterMovement(player: Player): World =
-    val foodEaten = world.foods.filter(food => EatingManager.canEatFood(player, food))
-    val playerEatsFood = foodEaten.foldLeft(player)((p, food) => p.grow(food))
-    val playersEaten = world
-      .playersExcludingSelf(player)
-      .filter(player => EatingManager.canEatPlayer(playerEatsFood, player))
-    val playerEatPlayers = playersEaten.foldLeft(playerEatsFood)((p, other) => p.grow(other))
+    val (foodEaten, playersEaten, playerEatPlayers) = GameWorld.getPlayerStats(world, player)
     world
       .updatePlayer(playerEatPlayers)
       .removePlayers(playersEaten)
