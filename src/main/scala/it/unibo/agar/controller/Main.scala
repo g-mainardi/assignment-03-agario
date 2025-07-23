@@ -1,7 +1,12 @@
 package it.unibo.agar.controller
 
-import it.unibo.agar.model.{AIMovement, GameInitializer, MockGameStateManager, World}
-import it.unibo.agar.view.{GlobalView, LocalView}
+import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.{ActorSystem, Behavior}
+import it.unibo.agar.distributed.GameProtocol.PlayerId
+import it.unibo.agar.distributed.players.{AIActor, UserActor}
+import it.unibo.agar.distributed.{FoodManager, GameCoordinator, GameOverActor, GlobalViewActor}
+import it.unibo.agar.model.GameInitializer
+import it.unibo.agar.view.GlobalView
 
 import scala.swing.*
 import scala.swing.Swing.onEDT
@@ -15,7 +20,6 @@ object Main extends SimpleSwingApplication:
   val speed = 10
 
   private val numFoods = 100
-  private val players = GameInitializer.initialPlayers(numPlayers, width, height)
   private val foods = GameInitializer.initialFoods(numFoods, width, height)
 
   private val numAIPlayers = 4
@@ -27,3 +31,27 @@ object Main extends SimpleSwingApplication:
   def randomY: Double = rand.nextDouble * height
 
   override def top: Frame = new Frame { visible = false }
+
+  override def main(args: Array[String]): Unit =
+    ActorSystem(Main(), "AgarSystem")
+    super.main(args)
+
+  def apply(): Behavior[Nothing] = Behaviors.setup[Nothing] : ctx =>
+    ctx spawn (GameCoordinator(Seq.empty, foods), "Game-Coordinator")
+    ctx spawn (FoodManager(), "Food-Manager")
+
+    1 to numAIPlayers foreach: i =>
+      ctx spawn (AIActor(s"AI-$i"), s"AIPlayer-$i")
+
+    users foreach: id =>
+      ctx spawn (UserActor(id), id)
+
+    ctx spawn (GameOverActor(), "Game-Over")
+
+    val globalView = new GlobalView
+    ctx spawn (GlobalViewActor(globalView), "Global-View")
+
+    onEDT:
+      globalView.open()
+
+    Behaviors.empty
