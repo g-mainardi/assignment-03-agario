@@ -1,6 +1,7 @@
 package it.unibo.agar.view
 
-import it.unibo.agar.model.World
+import it.unibo.agar.distributed.GameProtocol.PlayerId
+import it.unibo.agar.model.{Entity, World}
 
 import java.awt.Color
 import java.awt.Graphics2D
@@ -15,11 +16,9 @@ object AgarViewUtils:
   private val playerPalette: Array[Color] =
     Array(Color.blue, Color.orange, Color.cyan, Color.pink, Color.yellow, Color.red, Color.green, Color.lightGray)
 
-  private def playerColor(id: String): Color = id match
-    case pid if pid.startsWith("p") =>
-      val idx = pid.drop(1).toIntOption.getOrElse(0)
-      playerPalette(idx % playerPalette.length)
-    case _ => Color.gray
+  private def playerColor(id: PlayerId, ai: Boolean = false): Color =
+    if ai then Color.gray
+    else playerPalette(math abs id.hashCode % playerPalette.length)
 
   def drawWorld(
       g: Graphics2D,
@@ -34,23 +33,26 @@ object AgarViewUtils:
       ((x - offsetX - playerLabelOffsetX).toInt, (y - offsetY - playerLabelOffsetY).toInt)
 
     // Draw foods
-    g.setColor(Color.green)
-    world.foods.foreach: food =>
-      val radius = food.radius.toInt
-      val diameter = radius * 2
-      val (foodX, foodY) = toScreenCenter(food.x, food.y, radius)
-      g.fillOval(foodX, foodY, diameter, diameter)
+    g setColor Color.green
+    world.foods foreach: food =>
+      val (_, diameter, (foodX, foodY)) = measurements(food)
+      g fillOval (foodX, foodY, diameter, diameter)
+
+    def measurements(e: Entity): (Int, Int, (Int, Int)) =
+      val radius = e.radius.toInt
+      (radius, radius * 2, toScreenCenter(e.x, e.y, radius))
 
     // Draw players
-    world.players.foreach: player =>
-      val radius = player.radius.toInt
-      val diameter = radius * 2
-      val (borderX, borderY) = toScreenCenter(player.x, player.y, radius)
-      g.setColor(playerBorderColor)
-      g.drawOval(borderX, borderY, diameter, diameter)
-      g.setColor(playerColor(player.id))
+    world.players foreach: player =>
+      val (radius, diameter, (borderX, borderY)) = measurements(player)
+
+      g setColor playerBorderColor
+      g drawOval (borderX, borderY, diameter, diameter)
+
+      g setColor playerColor(player.id, player.ai)
       val (innerX, innerY) = toScreenCenter(player.x, player.y, radius - playerInnerOffset)
-      g.fillOval(innerX, innerY, diameter - playerInnerBorder, diameter - playerInnerBorder)
-      g.setColor(playerBorderColor)
+      g fillOval (innerX, innerY, diameter - playerInnerBorder, diameter - playerInnerBorder)
+
+      g setColor playerBorderColor
       val (labelX, labelY) = toScreenLabel(player.x, player.y)
-      g.drawString(player.id, labelX, labelY)
+      g drawString (player.id, labelX, labelY)
