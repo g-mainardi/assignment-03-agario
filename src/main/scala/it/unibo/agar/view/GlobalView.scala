@@ -5,7 +5,7 @@ import it.unibo.agar.model.World
 import java.awt.Graphics2D
 import scala.swing.*
 
-class GlobalView(manager: MockGameStateManager) extends MainFrame:
+class GlobalView extends MainFrame:
 
   title = "Agar.io - Global View"
   preferredSize = new Dimension(800, 800)
@@ -13,8 +13,8 @@ class GlobalView(manager: MockGameStateManager) extends MainFrame:
 
   contents = new Panel:
     override def paintComponent(g: Graphics2D): Unit =
-      val world = manager.getWorld
-      AgarViewUtils.drawWorld(g, world)
+      current foreach:
+        AgarViewUtils drawWorld (g, _)
 
   def update(world: World): Unit =
     current = Some(world)
