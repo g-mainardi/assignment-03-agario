@@ -34,8 +34,6 @@ object GameProtocol:
   trait FoodMessage extends Message
   enum FoodMessages extends FoodMessage:
     case GenerateFood
-    case ConsumeFood(foodId: FoodId, playerId: PlayerId)
-    case FoodUpdate(foods: Set[Food])
 
   enum GlobalViewCommand:
     case RefreshTimer

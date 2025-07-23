@@ -24,7 +24,7 @@ case class Player(id: String, x: Double = randomX, y: Double = randomY, mass: Do
   def grow(entity: Entity): Player =
     copy(mass = mass + entity.mass)
 
-case class Food(id: String, x: Double, y: Double, mass: Double = 100.0) extends Entity
+case class Food(id: String, x: Double = randomX, y: Double = randomY, mass: Double = 100.0) extends Entity
 
 case class World(
     width: Int,
