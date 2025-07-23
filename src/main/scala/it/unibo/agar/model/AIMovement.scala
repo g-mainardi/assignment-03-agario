@@ -17,16 +17,13 @@ object AIMovement:
       .sortBy(food => world.playerById(player).map(p => p.distanceTo(food)).getOrElse(Double.MaxValue))
       .headOption
 
-  /** Moves the AI toward the nearest food
+  /** Get the AI movement towards the nearest food.
     *
-    * @param gameManager
-    *   The game state manager that provides world state and movement capabilities
+    * @param id
+   *    AI player id
+   *  @param world
+   *    The current world (with foods)
     */
-  def moveAI(name: PlayerId, gameManager: GameStateManager): Unit =
-    getAIMove(name, gameManager.getWorld) match
-      case Some((dx, dy)) => gameManager.movePlayerDirection(name, dx, dy)
-      case None =>
-
   def getAIMove(id: PlayerId, world: World): Option[Direction] =
     val aiOpt = world playerById id
     val foodOpt = nearestFood(id, world)
