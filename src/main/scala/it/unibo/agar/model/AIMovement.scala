@@ -1,6 +1,6 @@
 package it.unibo.agar.model
 
-import it.unibo.agar.distributed.GameProtocol.{Direction, PlayerId}
+import it.unibo.agar.model.{Direction, PlayerId}
 
 /** Object responsible for AI movement logic, separate from the game state management */
 object AIMovement:

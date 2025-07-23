@@ -8,14 +8,11 @@ import it.unibo.agar.controller.Main
 import it.unibo.agar.distributed.GameProtocol.*
 import GameMessage.*
 import StandardPlayerMessage.*
-import it.unibo.agar.model.{Food, GameWorld, Player, World}
+import it.unibo.agar.model.{Food, GameWorld, Player, World, PlayerId}
 import GameWorld.updatePlayerPosition
 
 object GameCoordinator:
   private val WorldServiceKey = ServiceKey[GameMessage]("GameManager")
-
-  def worldUpdater[T <: GlobalViewMessage | GameOverMessage](ctx: ActorContext[T]): ActorRef[GetWorld] =
-    ctx.messageAdapter[GetWorld](res => WorldUpdate(res.world).asInstanceOf[T])
 
   def askManager[T](ctx: ActorContext[T]): Unit =
     ctx.system.receptionist ! Subscribe(WorldServiceKey, ctx.messageAdapter[Listing]:
@@ -65,7 +62,7 @@ object GameCoordinator:
         Behaviors.same
 
       case WorldRequest(replyTo) =>
-        replyTo ! GetWorld(world)
+        replyTo ! ListenerMessages.WorldUpdate(world)
         Behaviors.same
 
       case ThereIsAWinner(winner) =>

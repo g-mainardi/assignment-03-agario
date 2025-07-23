@@ -1,9 +1,12 @@
 package it.unibo.agar.model
 
 import it.unibo.agar.controller.Main.{height, initialMass, randomX, randomY, width, speed}
-import it.unibo.agar.distributed.GameProtocol.PlayerId
 
 import scala.util.Random
+
+type PlayerId = String
+type FoodId = String
+type Direction = (Double, Double)
 
 sealed trait Entity:
 

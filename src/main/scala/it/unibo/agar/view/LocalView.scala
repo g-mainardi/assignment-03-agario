@@ -1,6 +1,6 @@
 package it.unibo.agar.view
 
-import it.unibo.agar.distributed.GameProtocol.{Direction, PlayerId}
+import it.unibo.agar.model.{Direction, PlayerId}
 import it.unibo.agar.model.World
 
 import java.awt.Graphics2D

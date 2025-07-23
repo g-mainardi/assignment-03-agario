@@ -1,6 +1,6 @@
 package it.unibo.agar.view
 
-import it.unibo.agar.distributed.GameProtocol.PlayerId
+import it.unibo.agar.model.PlayerId
 import it.unibo.agar.model.{Entity, World}
 
 import java.awt.Color

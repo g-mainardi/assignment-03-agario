@@ -2,10 +2,9 @@ package it.unibo.agar.controller
 
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, Behavior}
-import it.unibo.agar.distributed.GameProtocol.PlayerId
 import it.unibo.agar.distributed.players.{AIActor, UserActor}
 import it.unibo.agar.distributed.{FoodManager, GameCoordinator, GameOverActor, GlobalViewActor}
-import it.unibo.agar.model.GameInitializer
+import it.unibo.agar.model.{GameInitializer, PlayerId}
 import it.unibo.agar.view.GlobalView
 
 import scala.swing.*
