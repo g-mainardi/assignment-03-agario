@@ -11,13 +11,22 @@ import scala.swing.Swing.onEDT
 
 object Main extends SimpleSwingApplication:
 
-  private val width = 1000
-  private val height = 1000
-  private val numPlayers = 4
+  val width = 1000
+  val height = 1000
+  val initialMass = 120.0
+  val massToWin = 10000
+  val speed = 10
+
   private val numFoods = 100
   private val players = GameInitializer.initialPlayers(numPlayers, width, height)
   private val foods = GameInitializer.initialFoods(numFoods, width, height)
   private val manager = new MockGameStateManager(World(width, height, players, foods))
+
+  private val numAIPlayers = 4
+
+  private val rand = scala.util.Random
+  def randomX: Double = rand.nextDouble * width
+  def randomY: Double = rand.nextDouble * height
 
   private val timer = new Timer()
   private val task: TimerTask = new TimerTask:
