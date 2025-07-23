@@ -1,11 +1,12 @@
 package it.unibo.agar.controller
 
 import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorSystem, Behavior}
+import akka.actor.typed.Behavior
 import it.unibo.agar.distributed.players.{AIActor, UserActor}
 import it.unibo.agar.distributed.{FoodManager, GameCoordinator, GameOverActor, GlobalViewActor}
 import it.unibo.agar.model.{GameInitializer, PlayerId}
 import it.unibo.agar.view.GlobalView
+import it.unibo.agar.{seeds, startupWithRole}
 
 import scala.swing.*
 import scala.swing.Swing.onEDT
@@ -32,10 +33,10 @@ object Main extends SimpleSwingApplication:
   override def top: Frame = new Frame { visible = false }
 
   override def main(args: Array[String]): Unit =
-    ActorSystem(Main(), "AgarSystem")
+    startupWithRole("AgarSystem", seeds.head)(systemBehavior)
     super.main(args)
 
-  def apply(): Behavior[Nothing] = Behaviors.setup[Nothing] : ctx =>
+  private def systemBehavior: Behavior[Nothing] = Behaviors.setup[Nothing] : ctx =>
     ctx spawn (GameCoordinator(Seq.empty, foods), "Game-Coordinator")
     ctx spawn (FoodManager(), "Food-Manager")
 
