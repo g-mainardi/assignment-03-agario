@@ -1,15 +1,12 @@
 package it.unibo.agar.distributed
 
-import akka.actor.typed.ActorRef
-import akka.actor.typed.Behavior
+import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
-import it.unibo.agar.view.GlobalView
-import it.unibo.agar.distributed.GameProtocol.{GameMessage, GetWorld, GlobalViewCommand}
+import it.unibo.agar.distributed.GameCoordinator.{askManager, worldUpdater}
+import it.unibo.agar.distributed.GameProtocol.*
 import GameMessage.WorldRequest
-import GlobalViewCommand.*
-import akka.actor.typed.receptionist.Receptionist
-import Receptionist.{Listing, Subscribe}
-import it.unibo.agar.distributed.GameCoordinator.WorldServiceKey
+import ListenerMessages.*
+import it.unibo.agar.view.GlobalView
 
 import scala.concurrent.duration.DurationInt
 object GlobalViewActor:
@@ -19,21 +16,17 @@ object GlobalViewActor:
 //  def apply(globalView: GlobalView): Behavior[GlobalViewCommand] = setup[GlobalViewCommand]:
 //    (m, wra) => handleMessages(globalView, m, wra)
 
-  def apply(globalView: GlobalView): Behavior[GlobalViewCommand] = Behaviors.setup { ctx =>
-    val worldUpdater = ctx.messageAdapter[GetWorld](res => WorldUpdate(res.world))
-    ctx.system.receptionist ! Subscribe(WorldServiceKey, ctx.messageAdapter[Listing]: listing =>
-      AvailableManagers(listing serviceInstances WorldServiceKey))
-
+  def apply(globalView: GlobalView): Behavior[GlobalViewMessage] = Behaviors.setup: ctx =>
+    askManager(ctx)
     Behaviors.withTimers: timers =>
       timers startTimerAtFixedRate (RefreshTimer, refreshingInterval)
-      handleMessages(globalView, None, worldUpdater)
-  }
+      handleMessages(globalView, None, ctx.messageAdapter[GetWorld](updateAdapter))
 
   private def handleMessages(
                               view: GlobalView,
                               managerOpt: Option[ActorRef[GameMessage]],
                               worldUpdater: ActorRef[GetWorld]
-                            ): Behavior[GlobalViewCommand] =
+                            ): Behavior[GlobalViewMessage] =
     Behaviors.receiveMessage:
       case AvailableManagers(managers) =>
         val newManager = managers.headOption orElse managerOpt

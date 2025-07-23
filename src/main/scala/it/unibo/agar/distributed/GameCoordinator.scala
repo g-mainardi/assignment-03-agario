@@ -1,8 +1,8 @@
 package it.unibo.agar.distributed
 
 import akka.actor.typed.receptionist.{Receptionist, ServiceKey}
-import Receptionist.Register
-import akka.actor.typed.scaladsl.Behaviors
+import Receptionist.{Listing, Register, Subscribe}
+import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior}
 import it.unibo.agar.controller.Main
 import it.unibo.agar.distributed.GameProtocol.*
@@ -12,7 +12,14 @@ import it.unibo.agar.model.{Food, GameWorld, Player, World}
 import GameWorld.updatePlayerPosition
 
 object GameCoordinator:
-  val WorldServiceKey: ServiceKey[GameMessage] = ServiceKey[GameMessage]("GameManager")
+  private val WorldServiceKey = ServiceKey[GameMessage]("GameManager")
+
+  def worldUpdater[T <: GlobalViewMessage | GameOverMessage](ctx: ActorContext[T]): ActorRef[GetWorld] =
+    ctx.messageAdapter[GetWorld](res => WorldUpdate(res.world).asInstanceOf[T])
+
+  def askManager[T](ctx: ActorContext[T]): Unit =
+    ctx.system.receptionist ! Subscribe(WorldServiceKey, ctx.messageAdapter[Listing]:
+      listing => AvailableManagers(listing serviceInstances WorldServiceKey).asInstanceOf[T])
 
   def apply(initialPlayers: Seq[Player], initialFood: Seq[Food]): Behavior[GameMessage] = Behaviors.setup: ctx =>
     ctx.system.receptionist ! Register(WorldServiceKey, ctx.self)

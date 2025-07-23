@@ -4,10 +4,11 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
 import it.unibo.agar.Utils.+:
 import it.unibo.agar.distributed.GameProtocol.*
+import StandardPlayerMessage.*
 import AIPlayerMessages.*
 import GameMessage.{PlayerJoined, PlayerMove}
+import it.unibo.agar.distributed.GameCoordinator.askManager
 import it.unibo.agar.model.{AIMovement, World}
-import it.unibo.agar.view.LocalView
 
 object AIActor extends PlayerActor[AIPlayerMessage]:
   import scala.concurrent.duration.*
@@ -20,11 +21,11 @@ object AIActor extends PlayerActor[AIPlayerMessage]:
   def apply(id: String): Behavior[AIPlayerMessage] = Behaviors.withTimers: timers =>
     given PlayerId = id
     timers startTimerAtFixedRate (Tick, interval)
-    startReceiving()
+    startReceiving
 
-  private def startReceiving(view: Option[LocalView] = None)(using id: PlayerId): Behavior[AIPlayerMessage] =
+  private def startReceiving(using id: PlayerId): Behavior[AIPlayerMessage] =
     Behaviors.receive: (ctx, msg) =>
-      register(ctx)
+      askManager(ctx)
       msg match
         case Start =>
           ctx.log info say (startMsg)

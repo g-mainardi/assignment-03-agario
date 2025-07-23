@@ -6,13 +6,13 @@ import it.unibo.agar.Utils.+:
 import it.unibo.agar.distributed.GameProtocol.*
 import GameMessage.{PlayerJoined, PlayerMove}
 import StandardPlayerMessage.*
-import UserPlayerMessage.UserPlayerMessage
+import it.unibo.agar.distributed.GameCoordinator.askManager
 import it.unibo.agar.view.LocalView
 
 object UserActor extends PlayerActor[UserPlayerMessage]:
   def apply(id: PlayerId): Behavior[UserPlayerMessage] = Behaviors.setup: ctx =>
     given PlayerId = id
-    register(ctx)
+    askManager(ctx)
     var managerOpt: Option[ActorRef[GameMessage]] = None
     var playing = false
     val view = new LocalView(id, dir => if playing then managerOpt foreach{_ ! PlayerMove(id, dir)})
@@ -42,5 +42,3 @@ object UserActor extends PlayerActor[UserPlayerMessage]:
 
       case AvailableManagers(_) =>  // già registrato o nessun GameManager
         Behaviors.same
-
-      case _ => ???

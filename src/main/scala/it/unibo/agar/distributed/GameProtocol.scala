@@ -16,34 +16,28 @@ object GameProtocol:
   // Players protocol
   sealed trait PlayerMessage extends Message
   
-  enum StandardPlayerMessage extends PlayerMessage:
+  trait UserPlayerMessage extends PlayerMessage
+  trait AIPlayerMessage extends PlayerMessage
+  
+  enum StandardPlayerMessage extends UserPlayerMessage, AIPlayerMessage:
     case Start
     case WorldUpdate(gameState: World)
     case End(winner: PlayerId)
 
-  object UserPlayerMessage:
-    export StandardPlayerMessage.*
-    type UserPlayerMessage = PlayerMessage
-  
-  object AIPlayerMessages:
-    export StandardPlayerMessage.*
-    case object Tick extends PlayerMessage
-    type AIPlayerMessage = PlayerMessage
+  enum AIPlayerMessages extends AIPlayerMessage:
+    case Tick
     
   // Food Manager protocol
   trait FoodMessage extends Message
   enum FoodMessages extends FoodMessage:
     case GenerateFood
 
-  enum GlobalViewCommand:
+  trait GlobalViewMessage extends Message
+  trait GameOverMessage extends Message
+  enum ListenerMessages extends GameOverMessage, GlobalViewMessage:
     case RefreshTimer
     case WorldUpdate(world: World)
-    case AvailableManagers(listings: Set[ActorRef[GameMessage]])
-
-  enum GameOverCommand:
-    case RefreshTimer
-    case AvailableManagers(listings: Set[ActorRef[GameMessage]])
-    case WorldUpdate(world: World)
+  val updateAdapter: GetWorld => ListenerMessages.WorldUpdate = msg => ListenerMessages.WorldUpdate(msg.world)
 
   // Game Coordinator protocol
   enum GameMessage extends Message:
@@ -56,5 +50,8 @@ object GameProtocol:
 
   // ReceptionistListingMessage
   final case class AvailableManagers(listings: Set[ActorRef[GameMessage]])
-    extends PlayerMessage
+    extends GlobalViewMessage
       with FoodMessage
+      with UserPlayerMessage
+      with AIPlayerMessage
+      with GameOverMessage
