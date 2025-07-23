@@ -2,8 +2,6 @@ package it.unibo.agar.model
 
 import it.unibo.agar.controller.Main.{height, initialMass, randomX, randomY, width, speed}
 
-import scala.util.Random
-
 type PlayerId = String
 type FoodId = String
 type Direction = (Double, Double)
@@ -57,18 +55,23 @@ case class World(
     copy(foods = foods.filterNot(f => ids.contains(f)))
 
 object GameWorld:
+  private val eating: (Player, Entity) => Player = (p, e) => p.grow(e)
+  extension (p: Player)
+    private def eats(seq: Seq[Entity]): Player = seq.foldLeft(p)(eating)
+    private def eatable(e: Entity): Boolean = e match
+      case f: Food   => EatingManager canEatFood   (p, f)
+      case o: Player => EatingManager canEatPlayer (p, o)
 
   def updatePlayerPosition(player: Player, dx: Double, dy: Double): Player =
-    val newX = (player.x + dx * speed).max(0).min(width)
-    val newY = (player.y + dy * speed).max(0).min(height)
+    val newX = (player.x + dx * speed) max 0 min width
+    val newY = (player.y + dy * speed) max 0 min height
     player.copy(x = newX, y = newY)
 
   def getPlayerStats(world: World, player: Player): (Seq[Food], Seq[Player], Player) =
-    val foodEaten = world.foods.filter(food => EatingManager.canEatFood(player, food))
-    val playerEatsFood = foodEaten.foldLeft(player)((p, food) => p.grow(food))
-    val playersEaten = world
-      .playersExcludingSelf(player)
-      .filter(player => EatingManager.canEatPlayer(playerEatsFood, player))
-    val playerEatPlayers = playersEaten.foldLeft(playerEatsFood)((p, other) => p.grow(other))
+    val foodEatable = world.foods filter player.eatable
+    val playerEatFood = player eats foodEatable
 
-    (foodEaten, playersEaten, playerEatPlayers)
+    val playersEatable = world playersExcludingSelf playerEatFood filter playerEatFood.eatable
+    val playerEatPlayers = playerEatFood eats playersEatable
+
+    (foodEatable, playersEatable, playerEatPlayers)
