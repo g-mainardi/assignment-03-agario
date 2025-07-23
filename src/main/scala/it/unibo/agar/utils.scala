@@ -25,3 +25,9 @@ def startupWithRole[X](role: String, port: Int)(root: => Behavior[X]): ActorSyst
 
   // Create an Akka system
   ActorSystem(root, "ClusterSystem", config)
+
+
+object Utils:
+  object +: :
+    def unapply[T](s: Set[T]): Option[(T, Set[T])] =
+      s.headOption map (h => (h, s - h))
