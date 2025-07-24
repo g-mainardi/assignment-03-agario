@@ -22,7 +22,7 @@ object GameProtocol:
   enum FoodMessages extends FoodMessage:
     case GenerateFood
 
-  // Listener protocol
+  // Listener on world protocol
   trait GlobalViewMessage extends Message
   trait GameOverMessage extends Message
   enum ListenerMessages extends GameOverMessage, GlobalViewMessage:
@@ -38,14 +38,15 @@ object GameProtocol:
     case ThereIsAWinner(winner: PlayerId)
     case WorldRequest(ref: ActorRef[ListenerMessages.WorldUpdate])
 
-  // ReceptionistListingMessage
+  // Adapter for Receptionist listing response
   final case class AvailableManagers(listings: Set[ActorRef[GameMessage]])
     extends GlobalViewMessage
       with FoodMessage
       with UserPlayerMessage
       with AIPlayerMessage
       with GameOverMessage
-  
+
+  // System player-spawn private protocol
   enum SpawnPlayerMessage extends Message:
     case SpawnUser
     case SpawnAI

@@ -44,7 +44,6 @@ object Main extends SimpleSwingApplication:
 
   private def systemBehavior: Behavior[SpawnPlayerMessage] = Behaviors.setup : ctx =>
     ctx spawn (GameCoordinator(Seq.empty, foods), "Game-Coordinator")
-//    ctx spawn (GameCoordinator(Seq.empty, foods), "Game-Coordinator2")
     ctx spawn (FoodManager(), "Food-Manager")
     ctx spawn (GameOverActor(), "Game-Over")
 

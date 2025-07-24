@@ -42,11 +42,9 @@ object GameCoordinator:
         Behaviors.same
 
       case PlayerMove(id, (dx, dy)) =>
-        // Update player position and handle eating
         world playerById id foreach: player =>
           val movedPlayer = updatePlayerPosition(player, dx, dy)
 
-          // Check for food eaten
           val (foodEaten, playersEaten, playerEatPlayers) = GameWorld getPlayerStats (world, movedPlayer)
           val remainingPlayers = (world playersExcludingSelf id filterNot playersEaten.contains) :+ playerEatPlayers
 
