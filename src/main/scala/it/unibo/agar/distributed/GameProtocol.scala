@@ -45,3 +45,7 @@ object GameProtocol:
       with UserPlayerMessage
       with AIPlayerMessage
       with GameOverMessage
+  
+  enum SpawnPlayerMessage extends Message:
+    case SpawnUser
+    case SpawnAI
