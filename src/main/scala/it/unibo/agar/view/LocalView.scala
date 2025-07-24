@@ -51,3 +51,11 @@ class LocalView(playerId: PlayerId, movementAction: Direction => Unit = _ => (),
       Dialog.Message.Info
     )
     close()
+
+  def showEaten(): Unit =
+    Dialog showMessage(
+      contents.head,
+      s"You have been eaten ! Continue as spectator",
+      title = "Spectate",
+      Dialog.Message.Info
+    )

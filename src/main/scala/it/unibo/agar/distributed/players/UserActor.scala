@@ -30,6 +30,7 @@ object UserActor extends PlayerActor[UserPlayerMessage]:
       case WorldUpdate(world) =>
         if playing && !(world isPresent id) then
           ctx.log info say (eatenMsg)
+          view.showEaten()
           playing = false
         view updateWorld world
         Behaviors.same
