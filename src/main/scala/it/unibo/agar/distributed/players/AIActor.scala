@@ -13,30 +13,36 @@ import it.unibo.agar.model.{AIMovement, World}
 object AIActor extends PlayerActor[AIPlayerMessage]:
   import scala.concurrent.duration.*
   private val interval: FiniteDuration = 100.millis
-  private var managerOpt: Option[ActorRef[GameMessage]] = None
   private var lastWorld: Option[World] = None
 
   override def say(msg: String)(using id: PlayerId): String = "AI" + super.say(msg)(using id)
 
-  def apply(id: String): Behavior[AIPlayerMessage] = Behaviors.withTimers: timers =>
+  def apply(id: String): Behavior[AIPlayerMessage] = Behaviors.setup: ctx =>
     given PlayerId = id
-    timers startTimerAtFixedRate (Tick, interval)
-    startReceiving
-
-  private def startReceiving(using id: PlayerId): Behavior[AIPlayerMessage] =
-    Behaviors.receive: (ctx, msg) =>
-      askManager(ctx)
-      msg match
+    var managerOpt: Option[ActorRef[GameMessage]] = None
+    var playing = false
+    askManager(ctx)
+    Behaviors.withTimers: timers =>
+      timers startTimerAtFixedRate (Tick, interval)
+      Behaviors.receiveMessage:
         case Start =>
           ctx.log info say (startMsg)
+          playing = true
           Behaviors.same
 
         case WorldUpdate(world) =>
-          lastWorld = Some(world)
-          Behaviors.same
+          if playing && !(world isPresent id) then
+            ctx.log info say ("was eaten")
+            playing = false
+            timers cancel Tick
+            Behaviors.stopped
+          else
+            lastWorld = Some(world)
+            Behaviors.same
 
         case End(winner) =>
           ctx.log info say (overMsg + winner)
+          playing = false
           Behaviors.stopped
 
         case AvailableManagers(manager +: _) =>
