@@ -1,12 +1,11 @@
 package it.unibo.agar.view
 
-import it.unibo.agar.model.{Direction, PlayerId}
-import it.unibo.agar.model.World
+import it.unibo.agar.model.{Direction, PlayerId, World}
 
 import java.awt.Graphics2D
 import scala.swing.*
 
-class LocalView(playerId: PlayerId, movementAction: Direction => Unit = _ => ()) extends MainFrame:
+class LocalView(playerId: PlayerId, movementAction: Direction => Unit = _ => (), onQuitting: () => Unit) extends MainFrame:
 
   title = s"Agar.io - Local View ($playerId)"
   preferredSize = new Dimension(400, 400)
@@ -16,6 +15,10 @@ class LocalView(playerId: PlayerId, movementAction: Direction => Unit = _ => ())
   def updateWorld(update: World): Unit =
     worldOpt = Some(update)
     repaint()
+
+  override def closeOperation(): Unit =
+    onQuitting()
+    dispose()
 
   contents = new Panel:
     listenTo(keys, mouse.moves)

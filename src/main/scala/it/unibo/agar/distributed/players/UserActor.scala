@@ -4,7 +4,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
 import it.unibo.agar.Utils.+:
 import it.unibo.agar.distributed.GameProtocol.*
-import GameMessage.{PlayerJoined, PlayerMove}
+import GameMessage.{PlayerJoined, PlayerLeft, PlayerMove}
 import StandardPlayerMessage.*
 import it.unibo.agar.distributed.GameCoordinator.askManager
 import it.unibo.agar.view.LocalView
@@ -15,7 +15,11 @@ object UserActor extends PlayerActor[UserPlayerMessage]:
     askManager(ctx)
     var managerOpt: Option[ActorRef[GameMessage]] = None
     var playing = false
-    val view = new LocalView(id, dir => if playing then managerOpt foreach{_ ! PlayerMove(id, dir)})
+    val view = new LocalView(
+      id,
+      movementAction = dir => if playing then managerOpt foreach{_ ! PlayerMove(id, dir)},
+      onQuitting     = () => managerOpt foreach{_ ! PlayerLeft(id)}
+    )
     Behaviors.receiveMessage:
       case Start =>
         ctx.log info say (startMsg)
