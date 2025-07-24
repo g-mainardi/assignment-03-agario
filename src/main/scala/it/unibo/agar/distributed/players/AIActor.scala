@@ -32,7 +32,7 @@ object AIActor extends PlayerActor[AIPlayerMessage]:
 
         case WorldUpdate(world) =>
           if playing && !(world isPresent id) then
-            ctx.log info say ("was eaten")
+            ctx.log info say (eatenMsg)
             playing = false
             timers cancel Tick
             Behaviors.stopped

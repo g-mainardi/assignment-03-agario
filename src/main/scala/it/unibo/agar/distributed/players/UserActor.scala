@@ -24,7 +24,9 @@ object UserActor extends PlayerActor[UserPlayerMessage]:
         Behaviors.same
 
       case WorldUpdate(world) =>
-        if playing && !(world isPresent id) then playing = false
+        if playing && !(world isPresent id) then
+          ctx.log info say (eatenMsg)
+          playing = false
         view updateWorld world
         Behaviors.same
 
