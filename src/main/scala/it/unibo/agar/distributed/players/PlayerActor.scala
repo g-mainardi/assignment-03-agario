@@ -8,6 +8,8 @@ trait PlayerActor[T <: PlayerMessage]:
   protected val startMsg: String = "game started"
   protected val overMsg: String = "game over, winner is "
   protected val newManagerMsg: String = "Game Manager found, I join"
+  protected val alreadyRegisteredMsg: String = "already registered"
+  protected val noManagersMsg: String = "No managers available"
   
   def apply(id: PlayerId): Behavior[T]
 

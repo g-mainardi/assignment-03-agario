@@ -39,14 +39,18 @@ object AIActor extends PlayerActor[AIPlayerMessage]:
           ctx.log info say (overMsg + winner)
           Behaviors.stopped
 
-        case AvailableManagers(manager +: _) if managerOpt.isEmpty =>
-          ctx.log info say (newManagerMsg)
-          managerOpt = Some(manager)
-          manager ! PlayerJoined(id, ctx.self, ai = true)
+        case AvailableManagers(manager +: _) =>
+          if managerOpt.isEmpty then
+            ctx.log info say (newManagerMsg)
+            managerOpt = Some(manager)
+            manager ! PlayerJoined(id, ctx.self, ai = true)
+          else
+            ctx.log info say (alreadyRegisteredMsg)
           Behaviors.same
 
         case AvailableManagers(_) =>
-          Behaviors.same // già registrato o nessun GameManager
+          ctx.log info say (noManagersMsg)
+          Behaviors.same
 
         case Tick =>
           for

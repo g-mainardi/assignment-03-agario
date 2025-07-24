@@ -34,11 +34,15 @@ object UserActor extends PlayerActor[UserPlayerMessage]:
         view showGameOver winner
         Behaviors.stopped
 
-      case AvailableManagers(manager +: _) if managerOpt.isEmpty =>
-        ctx.log info say (newManagerMsg)
-        managerOpt = Some(manager)
-        manager ! PlayerJoined(id, ctx.self)
+      case AvailableManagers(manager +: _) =>
+        if managerOpt.isEmpty then
+          ctx.log info say (newManagerMsg)
+          managerOpt = Some(manager)
+          manager ! PlayerJoined(id, ctx.self)
+        else 
+          ctx.log info say (alreadyRegisteredMsg)
         Behaviors.same
 
-      case AvailableManagers(_) =>  // già registrato o nessun GameManager
+      case AvailableManagers(_) =>
+        ctx.log info say (noManagersMsg)
         Behaviors.same
